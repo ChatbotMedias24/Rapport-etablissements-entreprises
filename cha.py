@@ -75,6 +75,21 @@ st.markdown(
         .message-container.assistant {
             justify-content: flex-start; /* Aligner à droite pour l'assistant */
         }
+        input[type="text"] {
+            background-color: #E0E0E0;
+        }
+
+        /* Style for placeholder text with bold font */
+        input::placeholder {
+            color: #555555; /* Gris foncé */
+            font-weight: bold; /* Mettre en gras */
+        }
+
+        /* Ajouter de l'espace en blanc sous le champ de saisie */
+        .input-space {
+            height: 20px;
+            background-color: white;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -102,7 +117,7 @@ conversation_history = StreamlitChatMessageHistory()
 
 def main():
     conversation_history = StreamlitChatMessageHistory()  # Créez l'instance pour l'historique
-    st.header("Projet de Loi de Finances pour l’année budgétaire 2025: Rapport sur les établissements et entreprises publics 💬")
+    st.header("Projet de Loi de Finances pour l’année budgétaire 2025: Rapport économique et financier 💬")
     
     # Load the document
     docx = 'Rapport etablissement entreprise (3).docx'
@@ -121,20 +136,21 @@ def main():
         with open("aaa.pkl", "wb") as f:
             pickle.dump(VectorStore, f)
 
-        st.markdown('<p style="margin-bottom: 0;"><h7><b>Posez vos questions ci-dessous:</b></h7></p>', unsafe_allow_html=True)
-
-        query_input = st.text_input("")
+        st.markdown('<div class="input-space"></div>', unsafe_allow_html=True)
         selected_questions = st.sidebar.radio("****Choisir :****", questions)
-        
-        # Initialize query
-        query = ""
-        
+
+        # Afficher toujours la barre de saisie
+        query_input = st.text_input("", key="text_input_query", placeholder="Posez votre question ici...", help="Posez votre question ici...")
+        st.markdown('<div class="input-space"></div>', unsafe_allow_html=True)
+
         if query_input and query_input not in st.session_state.previous_question:
             query = query_input
             st.session_state.previous_question.append(query_input)
         elif selected_questions:
             query = selected_questions
-        
+        else:
+            query = ""
+
         if query:
             docs = VectorStore.similarity_search(query=query, k=3)
 
@@ -142,19 +158,25 @@ def main():
             chain = load_qa_chain(llm=llm, chain_type="stuff")
             with get_openai_callback() as cb:
                 response = chain.run(input_documents=docs, question=query)
-                
                 if "Donnez-moi un résumé du rapport" in query:
                     response = "Le rapport sur les établissements et entreprises publics (EEP) pour le Projet de Loi de Finances 2025 présente un bilan détaillé des performances financières et opérationnelles des EEP au Maroc. Il couvre des indicateurs clés tels que le chiffre d'affaires, les charges d'exploitation, les investissements, et la dette de financement. Le secteur des EEP est dominé par des secteurs tels que l’énergie, les mines, l’eau et l’environnement, qui représentent une part importante du chiffre d'affaires et des investissements. En 2023, les EEP ont généré un chiffre d'affaires total de 332 milliards de dirhams, et leurs investissements ont augmenté de 6 % par rapport à l'année précédente. Le rapport met également en lumière les défis financiers, notamment des déficits dans certains secteurs et une diminution de la capacité d'autofinancement, nécessitant des transferts et subventions de l'État pour maintenir la viabilité des opérations."
+                # Votre logique pour traiter les réponses
                 conversation_history.add_user_message(query)
                 conversation_history.add_ai_message(response)
 
+            # Format et afficher les messages comme précédemment
             formatted_messages = []
+            previous_role = None  # Variable pour stocker le rôle du message précédent
             for msg in conversation_history.messages:
                 role = "user" if msg.type == "human" else "assistant"
                 avatar = "🧑" if role == "user" else "🤖"
                 css_class = "user-message" if role == "user" else "assistant-message"
-                
-                message_div = f'<div class="{css_class}">{msg.content}</div>'
+
+                if role == "user" and previous_role == "assistant":
+                    message_div = f'<div class="{css_class}" style="margin-top: 25px;">{msg.content}</div>'
+                else:
+                    message_div = f'<div class="{css_class}">{msg.content}</div>'
+
                 avatar_div = f'<div class="avatar">{avatar}</div>'
                 
                 if role == "user":
@@ -163,6 +185,7 @@ def main():
                     formatted_message = f'<div class="message-container assistant"><div class="message-content">{message_div}</div><div class="message-avatar">{avatar_div}</div></div>'
                 
                 formatted_messages.append(formatted_message)
+                previous_role = role  # Mettre à jour le rôle du message précédent
 
             messages_html = "\n".join(formatted_messages)
             st.markdown(messages_html, unsafe_allow_html=True)
