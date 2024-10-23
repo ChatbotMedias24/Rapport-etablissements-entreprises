@@ -154,9 +154,13 @@ def main():
 
         if query :
             st.session_state.conversation_history.add_user_message(query)  # Ajouter à l'historique
+            if "Donnez-moi un résumé du rapport" in query:
+                summary="""Le rapport sur les établissements et entreprises publics (EEP) pour le Projet de Loi de Finances 2025 présente un bilan détaillé des performances financières et opérationnelles des EEP au Maroc. Il couvre des indicateurs clés tels que le chiffre d'affaires, les charges d'exploitation, les investissements, et la dette de financement. Le secteur des EEP est dominé par des secteurs tels que l’énergie, les mines, l’eau et l’environnement, qui représentent une part importante du chiffre d'affaires et des investissements. En 2023, les EEP ont généré un chiffre d'affaires total de 332 milliards de dirhams, et leurs investissements ont augmenté de 6 % par rapport à l'année précédente. Le rapport met également en lumière les défis financiers, notamment des déficits dans certains secteurs et une diminution de la capacité d'autofinancement, nécessitant des transferts et subventions de l'État pour maintenir la viabilité des opérations."""
+                st.session_state.conversation_history.add_ai_message(summary) 
 
         
-            messages = [
+            else:
+                messages = [
                 {
                     "role": "user",
                     "content": (
@@ -166,17 +170,16 @@ def main():
             ]
 
             # Appeler l'API OpenAI pour obtenir le résumé
-            response = openai.ChatCompletion.create(
+                response = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=messages
             )
 
             # Récupérer le contenu de la réponse
 
-            summary = response['choices'][0]['message']['content']
-            if "Donnez-moi un résumé du rapport" in query:
-                summary="""Le rapport sur les établissements et entreprises publics (EEP) pour le Projet de Loi de Finances 2025 présente un bilan détaillé des performances financières et opérationnelles des EEP au Maroc. Il couvre des indicateurs clés tels que le chiffre d'affaires, les charges d'exploitation, les investissements, et la dette de financement. Le secteur des EEP est dominé par des secteurs tels que l’énergie, les mines, l’eau et l’environnement, qui représentent une part importante du chiffre d'affaires et des investissements. En 2023, les EEP ont généré un chiffre d'affaires total de 332 milliards de dirhams, et leurs investissements ont augmenté de 6 % par rapport à l'année précédente. Le rapport met également en lumière les défis financiers, notamment des déficits dans certains secteurs et une diminution de la capacité d'autofinancement, nécessitant des transferts et subventions de l'État pour maintenir la viabilité des opérations."""
-            st.session_state.conversation_history.add_ai_message(summary)  # Ajouter à l'historique
+                summary = response['choices'][0]['message']['content']
+            
+                st.session_state.conversation_history.add_ai_message(summary)  # Ajouter à l'historique
             
             # Afficher la question et le résumé de l'assistant
             #conversation_history.add_user_message(query)
