@@ -113,7 +113,6 @@ st.sidebar.subheader("Suggestions:")
 questions = [
     "Donnez-moi un résumé du rapport ",
     "Quels sont les projets d'investissement majeurs prévus pour 2025, et comment ces investissements contribueront-ils à la croissance économique du pays ?",        
-    "Comment la répartition sectorielle des établissements publics a-t-elle évolué entre 2021 et 2023 ?",        
     "Quelle est la raison derrière l'amélioration des résultats nets bénéficiaires des établissements publics en 2023 par rapport aux années précédentes ?"
 ]
 # Initialisation de l'historique de la conversation dans `st.session_state`
